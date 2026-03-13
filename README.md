@@ -13,7 +13,7 @@ Documind is an intelligent Retrieval-Augmented Generation (RAG) application that
 * **Robust Architecture:** Engineered with Python and FastAPI for fast, reliable handling of document parsing, embedding generation, and LLM orchestration.
 
 ## 🛠️ Tech Stack
-* **frontend** Streamlit
+* **Frontend** Streamlit
 * **Backend:** Python, FastAPI
 * **AI & Processing:** Google Gemini, RAG Pipeline
 * **Database & Storage:** Supabase (PostgreSQL, Vector Database)
