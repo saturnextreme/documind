@@ -6,7 +6,7 @@ class GenerateResponse:
         self.client = genai.Client(
             api_key=os.getenv("GEMINI_API_KEY")
         )
-        self.model = "gemini-1.5-pro"
+        self.model = "gemini-3-flash-preview"
 
     def print_response(self, context):
         return self.client.models.generate_content(
