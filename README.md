@@ -1,6 +1,6 @@
 # Documind 🧠📄
 
-![Documind Interface](image_cacd15.png)
+![Documind Interface](image.png)
 
 Documind is an intelligent Retrieval-Augmented Generation (RAG) application that empowers users to seamlessly upload, index, and chat with their PDF documents. Built with a highly scalable FastAPI backend, Documind extracts deep insights from your files and delivers highly accurate, context-aware answers powered by Google's Gemini models, complete with reliable source citations.
 
