@@ -59,22 +59,22 @@ class RAGPipeline:
     def generate(self, prompt):
         return self.generator.print_response(prompt)
 
-if __name__ == "__main__":
-    rag = RAGPipeline(pdf_paths=["word_representation.pdf", "document.pdf"])
-    rag.build_index()
+# if __name__ == "__main__":
+#     rag = RAGPipeline(pdf_paths=["word_representation.pdf", "document.pdf"])
+#     rag.build_index()
     
-    print("\n\nAsk Rag Questions\n\n")
-    x = input()
-    i=0
-    while x != "False":
-        print(f"{i+1}. {x}")
-        response_prompt = rag.query(x, k=7)
-        result = rag.generate(response_prompt)
-        print(result, end="\n\n\n")
-        x = input()
-        i+=1
+#     print("\n\nAsk Rag Questions\n\n")
+#     x = input()
+#     i=0
+#     while x != "False":
+#         print(f"{i+1}. {x}")
+#         response_prompt = rag.query(x, k=7)
+#         result = rag.generate(response_prompt)
+#         print(result, end="\n\n\n")
+#         x = input()
+#         i+=1
 
-    if rag.vector_store:
-        rag.vector_store.clear()
+#     if rag.vector_store:
+#         rag.vector_store.clear()
 
-    print("Session ended. Database cleaned.")
+#     print("Session ended. Database cleaned.")
