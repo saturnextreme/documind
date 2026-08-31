@@ -1,31 +1,56 @@
-import uuid
+from fastapi import APIRouter, HTTPException
 
-from fastapi import APIRouter
-
-from services.session_manager import session_manager
+from services.sessions import (
+    create_session,
+    delete_session,
+)
 
 
 router = APIRouter()
 
 
+# ============================================================
+# Create Session
+# ============================================================
+
 @router.post("")
-async def create_session():
+async def create_session_route():
 
-    session_id = str(uuid.uuid4())[:8]
+    try:
 
-    session_manager.create_session(session_id)
+        return create_session()
 
-    return {
-        "session_id": session_id
-    }
+    except Exception as e:
 
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
+
+
+# ============================================================
+# Delete Session
+# ============================================================
 
 @router.delete("/{session_id}")
-async def delete_session(session_id: str):
+async def delete_session_route(
+    session_id: str,
+):
 
-    session_manager.delete_session(session_id)
+    try:
 
-    return {
-        "message": "Session deleted",
-        "session_id": session_id
-    }
+        return delete_session(session_id)
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )

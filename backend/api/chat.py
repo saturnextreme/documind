@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from services.session_manager import session_manager
+from services.chat import chat
 
 
 router = APIRouter()
@@ -12,53 +12,35 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/{session_id}/chat")
-async def chat(
+async def chat_endpoint(
     session_id: str,
-    request: ChatRequest
+    request: ChatRequest,
 ):
 
     try:
-        session = session_manager.get_session(session_id)
 
-    except KeyError:
-        raise HTTPException(
-            status_code=404,
-            detail="Session not found"
+        return chat(
+            session_id,
+            request.question,
         )
 
-    if session.rag is None:
+    except ValueError as e:
+
         raise HTTPException(
             status_code=400,
-            detail="Knowledge base has not been indexed yet"
+            detail=str(e),
         )
 
-    try:
+    except LookupError as e:
 
-        prompt = session.rag.query(
-            request.question,
-            k=5
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
         )
-
-        result = session.rag.generate(prompt)
-
-        session.messages.append({
-            "role": "user",
-            "content": request.question
-        })
-
-        session.messages.append({
-            "role": "assistant",
-            "content": result
-        })
-
-        return {
-            "question": request.question,
-            "answer": result
-        }
 
     except Exception as e:
 
         raise HTTPException(
             status_code=500,
-            detail=str(e)
+            detail=str(e),
         )

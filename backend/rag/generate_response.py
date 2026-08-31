@@ -1,10 +1,10 @@
 from google import genai
-import os
+from config import settings
 
 class GenerateResponse:
     def __init__(self):
         self.client = genai.Client(
-            api_key=os.getenv("GEMINI_API_KEY")
+            api_key=settings.GEMINI_API_KEY
         )
         self.model = "gemini-3-flash-preview"
 

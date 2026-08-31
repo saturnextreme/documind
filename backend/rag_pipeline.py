@@ -1,80 +1,65 @@
 from rag.document_loader import DocumentLoader, TextSplitter
 from rag.embedder import Embedder
-from rag.vector_store import VectorStore
 from rag.generate_response import GenerateResponse
-import uuid
-from dotenv import load_dotenv
 
-load_dotenv()
 
 class RAGPipeline:
-    def __init__(self, pdf_paths):
-        self.session_id = str(uuid.uuid4())
-        self.loader = DocumentLoader(pdf_paths)
+
+    def __init__(self, pdf_documents):
+
+        self.loader = DocumentLoader(
+            pdf_documents
+        )
         self.splitter = TextSplitter()
         self.embedder = Embedder()
-        self.vector_store = None
-        self.generator = GenerateResponse()
         self.processed_chunks = []
+        self.embeddings = None
 
     def build_index(self):
-        data  = self.loader.load()
-        self.processed_chunks = self.splitter.split(data)
 
-        texts = [chunk["text"] for chunk in self.processed_chunks]
-        metadata_list = [chunk["metadata"] for chunk in self.processed_chunks]
-        
-        embeddings = self.embedder.embed(texts)
+        # -----------------------------
+        # 1. Load PDFs
+        # -----------------------------
 
-        dimension = embeddings.shape[1]
-        self.vector_store = VectorStore(dimension, self.session_id)
-        self.vector_store.add(embeddings, texts, metadata_list)
+        data = self.loader.load()
 
-    def query(self, question, k=3):
-        query_embedding = self.embedder.embed(question)
-        retrieved_chunks = self.vector_store.search(query_embedding, k)
+        # -----------------------------
+        # 2. Split into chunks
+        # -----------------------------
 
-        return self.build_prompt(question, retrieved_chunks)
+        self.processed_chunks = (
+            self.splitter.split(data)
+        )
 
-    def build_prompt(self, question, contexts):
-        context_text = ""
-        for chunk in contexts:
-            md = chunk["metadata"]
-            context_text += f"(File: {md['file_name']}, Page: {md['page_number']})\n"
-            context_text += chunk["text"] + "\n\n"
+        if not self.processed_chunks:
 
-        prompt = f"""
-            Answer only using the context below and give citation for that answer.
+            raise ValueError(
+                "No text chunks were generated "
+                "from the PDFs"
+            )
 
-            Context:
-            {context_text}
+        # -----------------------------
+        # 3. Extract text
+        # -----------------------------
 
-            Question:
-            {question}
+        texts = [
+            chunk["text"]
+            for chunk in self.processed_chunks
+        ]
 
-            Answer:
-        """
-        return prompt
+        # -----------------------------
+        # 4. Generate embeddings
+        # -----------------------------
 
-    def generate(self, prompt):
-        return self.generator.print_response(prompt)
+        self.embeddings = (
+            self.embedder.embed(texts)
+        )
 
-# if __name__ == "__main__":
-#     rag = RAGPipeline(pdf_paths=["word_representation.pdf", "document.pdf"])
-#     rag.build_index()
-    
-#     print("\n\nAsk Rag Questions\n\n")
-#     x = input()
-#     i=0
-#     while x != "False":
-#         print(f"{i+1}. {x}")
-#         response_prompt = rag.query(x, k=7)
-#         result = rag.generate(response_prompt)
-#         print(result, end="\n\n\n")
-#         x = input()
-#         i+=1
+        # -----------------------------
+        # 5. Return chunks + embeddings
+        # -----------------------------
 
-#     if rag.vector_store:
-#         rag.vector_store.clear()
-
-#     print("Session ended. Database cleaned.")
+        return (
+            self.processed_chunks,
+            self.embeddings
+        )
