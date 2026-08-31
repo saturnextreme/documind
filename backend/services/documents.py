@@ -12,9 +12,9 @@ from services.sessions import check_session
 # Upload Documents
 # ============================================================
 
-async def upload_documents(session_id: str, files):
+async def upload_documents(session_id: str, files, user_id: str):
 
-    check_session(session_id)
+    check_session(session_id, user_id)
 
     saved_files = []
 
@@ -98,9 +98,9 @@ async def upload_documents(session_id: str, files):
 # Index Documents
 # ============================================================
 
-def index_documents(session_id: str):
+def index_documents(session_id: str, user_id: str):
 
-    check_session(session_id)
+    check_session(session_id, user_id)
 
     # --------------------------------------------------------
     # Get documents belonging to session

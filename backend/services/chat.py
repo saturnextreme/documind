@@ -13,13 +13,13 @@ generator = GenerateResponse()
 # Chat
 # ============================================================
 
-def chat(session_id: str, question: str):
+def chat(session_id: str, question: str, user_id: str):
 
     # --------------------------------------------------------
     # 1. Check session
     # --------------------------------------------------------
 
-    check_session(session_id)
+    check_session(session_id, user_id)
 
     # --------------------------------------------------------
     # 2. Check knowledge base

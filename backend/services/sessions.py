@@ -5,13 +5,14 @@ from database import supabase
 # Check Session
 # ============================================================
 
-def check_session(session_id: str):
+def check_session(session_id: str, user_id: str):
 
     response = (
         supabase
         .table("sessions")
         .select("id")
         .eq("id", session_id)
+        .eq("user_id", user_id)
         .maybe_single()
         .execute()
     )
@@ -24,12 +25,14 @@ def check_session(session_id: str):
 # Create Session
 # ============================================================
 
-def create_session():
+def create_session(user_id: str):
 
     response = (
         supabase
         .table("sessions")
-        .insert({})
+        .insert({
+            "user_id": user_id
+        })
         .execute()
     )
 
@@ -49,13 +52,14 @@ def create_session():
 # Delete Session
 # ============================================================
 
-def delete_session(session_id: str):
+def delete_session(session_id: str, user_id: str,):
 
     response = (
         supabase
         .table("sessions")
         .delete()
         .eq("id", session_id)
+        .eq("user_id", user_id)
         .execute()
     )
 

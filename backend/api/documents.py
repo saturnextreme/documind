@@ -3,12 +3,16 @@ from fastapi import (
     UploadFile,
     File,
     HTTPException,
+    Depends,
 )
 
 from services.documents import (
     upload_documents,
     index_documents,
 )
+
+from services.sessions import check_session
+from auth.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -22,13 +26,21 @@ router = APIRouter()
 async def upload_documents_route(
     session_id: str,
     files: list[UploadFile] = File(...),
+    current_user=Depends(get_current_user),
 ):
 
     try:
 
+        # Verify session belongs to logged-in user
+        check_session(
+            session_id,
+            current_user["user_id"],
+        )
+
         saved_files = await upload_documents(
             session_id,
             files,
+            current_user["user_id"],
         )
 
         return {
@@ -39,7 +51,7 @@ async def upload_documents_route(
     except ValueError as e:
 
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=str(e),
         )
 
@@ -56,16 +68,25 @@ async def upload_documents_route(
 # ============================================================
 
 @router.post("/{session_id}/index")
-async def build_index(session_id: str):
+async def build_index(
+    session_id: str,
+    current_user=Depends(get_current_user),
+):
 
     try:
 
-        return index_documents(session_id)
+        # Verify session belongs to logged-in user
+        check_session(
+            session_id,
+            current_user["user_id"],
+        )
+
+        return index_documents(session_id, current_user["user_id"])
 
     except ValueError as e:
 
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=str(e),
         )
 

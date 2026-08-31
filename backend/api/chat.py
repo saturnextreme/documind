@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from services.chat import chat
+from auth.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -15,6 +16,7 @@ class ChatRequest(BaseModel):
 async def chat_endpoint(
     session_id: str,
     request: ChatRequest,
+    current_user=Depends(get_current_user),
 ):
 
     try:
@@ -22,6 +24,7 @@ async def chat_endpoint(
         return chat(
             session_id,
             request.question,
+            current_user["user_id"],
         )
 
     except ValueError as e:
