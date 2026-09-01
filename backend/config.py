@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SUPABASE_URL: str
     SUPABASE_KEY: str
+    ALLOWED_ORIGIN: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from config import settings
 
 from api.sessions import router as sessions_router
 from api.documents import router as documents_router
@@ -14,6 +15,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        settings.ALLOWED_ORIGIN,
         "http://localhost:5173",
         "http://localhost:4173",
     ],
