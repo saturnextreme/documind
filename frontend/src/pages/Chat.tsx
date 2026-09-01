@@ -29,6 +29,9 @@ export default function Chat() {
   const { sessionId } = useParams<{ sessionId: string }>();
 
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
 
@@ -89,6 +92,8 @@ export default function Chat() {
       setSessions(sessionList);
     } catch {
       // Sidebar failure shouldn't break the chat.
+    } finally {
+      setSessionsLoading(false);
     }
   };
 
@@ -97,53 +102,52 @@ export default function Chat() {
   // ==========================================================
 
   const loadSelectedSession = async (id: string) => {
-    setMessages([]);
-    setQuestion("");
-    setUploaded(false);
-    setIndexed(false);
-    setError("");
-    const selectedSession = sessions.find(
-      (session) => session.id === id
-    );
+    setSessionLoading(true);
 
-    if (!selectedSession) {
-      return;
-    }
-
-    setError("");
-    setQuestion("");
-    setMessages([]);
-
-    if (selectedSession.status === "no_documents") {
+    try {
+      setMessages([]);
+      setQuestion("");
       setUploaded(false);
       setIndexed(false);
-      return;
-    }
+      setError("");
 
-    if (selectedSession.status === "uploaded") {
-      setUploaded(true);
-      setIndexed(false);
-      return;
-    }
-
-    if (selectedSession.status === "indexing") {
-      setUploaded(true);
-      setIndexed(false);
-      setError("Documents are still being prepared.");
-      return;
-    }
-
-    if (selectedSession.status === "failed") {
-      setUploaded(true);
-      setIndexed(false);
-      setError(
-        "Document preparation failed. Please try indexing again."
+      const selectedSession = sessions.find(
+        (session) => session.id === id
       );
-      return;
-    }
 
-    if (selectedSession.status === "indexed") {
-      try {
+      if (!selectedSession) {
+        return;
+      }
+
+      if (selectedSession.status === "no_documents") {
+        setUploaded(false);
+        setIndexed(false);
+        return;
+      }
+
+      if (selectedSession.status === "uploaded") {
+        setUploaded(true);
+        setIndexed(false);
+        return;
+      }
+
+      if (selectedSession.status === "indexing") {
+        setUploaded(true);
+        setIndexed(false);
+        setError("Documents are still being prepared.");
+        return;
+      }
+
+      if (selectedSession.status === "failed") {
+        setUploaded(true);
+        setIndexed(false);
+        setError(
+          "Document preparation failed. Please try indexing again."
+        );
+        return;
+      }
+
+      if (selectedSession.status === "indexed") {
         const data = await getChatHistory(id);
 
         setMessages(
@@ -157,15 +161,15 @@ export default function Chat() {
 
         setUploaded(true);
         setIndexed(true);
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to load conversation"
-        );
-
-        setIndexed(true);
       }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load conversation"
+      );
+    } finally {
+      setSessionLoading(false);
     }
   };
 
@@ -419,6 +423,7 @@ export default function Chat() {
     <div className="flex h-screen bg-white text-slate-900">
       <Sidebar
         sessions={sessions}
+        sessionsLoading={sessionsLoading}
         activeSessionId={sessionId}
         creatingSession={creating}
         deletingSession={deleting}
@@ -446,17 +451,32 @@ export default function Chat() {
           </div>
         </header>
 
-        {!indexed ? (
-          <ChatSetup
-            sessionId={sessionId}
-            uploaded={uploaded}
-            indexing={indexing}
-            error={error}
-            onUploadSuccess={handleUploadSuccess}
-            onIndex={handleIndex}
-          />
+        {sessionLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex items-center gap-3 text-sm text-slate-400">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+              Loading conversation...
+            </div>
+          </div>
+        ) : !indexed ? (
+          <div
+            key={sessionId}
+            className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+          >
+            <ChatSetup
+              sessionId={sessionId}
+              uploaded={uploaded}
+              indexing={indexing}
+              error={error}
+              onUploadSuccess={handleUploadSuccess}
+              onIndex={handleIndex}
+            />
+          </div>
         ) : (
-          <>
+          <div
+            key={sessionId}
+            className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex min-h-0 flex-1 flex-col"
+          >
             <ChatMessages
               messages={messages}
               loading={loading}
@@ -476,7 +496,7 @@ export default function Chat() {
                 {error}
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
     </div>

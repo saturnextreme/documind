@@ -13,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +33,23 @@ export default function Login() {
     }
 
     setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setGoogleLoading(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -116,6 +134,50 @@ export default function Login() {
               Sign in
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs text-slate-400">OR</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          {/* Google Login */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={googleLoading}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {googleLoading ? (
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+            ) : (
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill="#4285F4"
+                  d="M21.35 12.23c0-.79-.07-1.55-.23-2.27H12v4.3h5.23a4.47 4.47 0 0 1-1.94 2.93v2.44h3.14c1.84-1.69 2.92-4.18 2.92-7.4Z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 21.5c2.63 0 4.84-.87 6.45-2.37l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.52A9.75 9.75 0 0 0 12 21.5Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M6.54 13.58A5.86 5.86 0 0 1 6.23 12c0-.55.11-1.09.31-1.58V7.9H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.1l3.24-2.52Z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 6.39c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.83 3.48 14.63 2.5 12 2.5a9.75 9.75 0 0 0-8.7 5.4l3.24 2.52C7.31 8.11 9.46 6.39 12 6.39Z"
+                />
+              </svg>
+            )}
+
+            {googleLoading ? "Signing in..." : "Continue with Google"}
+          </button>
 
           <div className="mt-7 border-t border-slate-100 pt-6 text-center">
             <p className="text-sm text-slate-500">

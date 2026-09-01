@@ -2,6 +2,7 @@ import type { Session } from "../types/session";
 
 type SessionListProps = {
   sessions: Session[];
+  sessionsLoading: boolean;
   activeSessionId?: string;
   onSelect: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
@@ -9,10 +10,23 @@ type SessionListProps = {
 
 export default function SessionList({
   sessions,
+  sessionsLoading,
   activeSessionId,
   onSelect,
   onDelete,
 }: SessionListProps) {
+  if (sessionsLoading) {
+    return (
+      <div className="mt-2 space-y-2">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-10 animate-pulse rounded-xl bg-slate-200/70"
+          />
+        ))}
+      </div>
+    );
+  }
   if (sessions.length === 0) {
     return (
       <p className="px-3 py-3 text-xs leading-5 text-slate-400">

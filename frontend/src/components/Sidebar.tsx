@@ -8,6 +8,7 @@ import type { Session } from "../types/session";
 
 type SidebarProps = {
   sessions: Session[];
+  sessionsLoading: boolean;
   activeSessionId?: string;
   creatingSession: boolean;
   deletingSession: boolean;
@@ -18,6 +19,7 @@ type SidebarProps = {
 
 export default function Sidebar({
   sessions,
+  sessionsLoading,
   activeSessionId,
   creatingSession,
   deletingSession,
@@ -108,6 +110,7 @@ export default function Sidebar({
 
         <SessionList
           sessions={sessions}
+          sessionsLoading={sessionsLoading}
           activeSessionId={activeSessionId}
           onSelect={onSelectSession}
           onDelete={onDeleteSession}
