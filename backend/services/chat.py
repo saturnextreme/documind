@@ -8,7 +8,6 @@ from services.sessions import check_session
 embedder = Embedder()
 generator = GenerateResponse()
 
-
 # ============================================================
 # Chat
 # ============================================================
@@ -41,7 +40,61 @@ def chat(session_id: str, question: str, user_id: str):
         )
 
     # --------------------------------------------------------
-    # 3. Generate question embedding
+    # 3. Check if this is the first user question
+    # --------------------------------------------------------
+
+    messages_response = (
+        supabase
+        .table("chat_messages")
+        .select("id")
+        .eq("session_id", session_id)
+        .eq("role", "user")
+        .limit(1)
+        .execute()
+    )
+
+    is_first_question = not messages_response.data
+
+    title = None
+
+    # --------------------------------------------------------
+    # 4. Generate conversation title
+    # --------------------------------------------------------
+
+    if is_first_question:
+
+        title_prompt = f"""
+    Generate a concise title for this conversation.
+
+    Requirements:
+
+    * The title must contain 10 to 14 words.
+    * Describe the main intent of the user's question.
+    * Do not use quotation marks.
+    * Do not write "Title:".
+    * Return only the title.
+
+    User's question:
+    {question}
+    """
+        title = generator.print_response(
+            title_prompt
+        ).strip()
+
+        # Save title to session
+        (
+            supabase
+            .table("sessions")
+            .update({
+                "title": title
+            })
+            .eq("id", session_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+    # --------------------------------------------------------
+    # 5. Generate question embedding
     # --------------------------------------------------------
 
     query_embedding = embedder.embed(
@@ -49,7 +102,7 @@ def chat(session_id: str, question: str, user_id: str):
     )
 
     # --------------------------------------------------------
-    # 4. Search similar document chunks
+    # 6. Search similar document chunks
     # --------------------------------------------------------
 
     search_response = supabase.rpc(
@@ -70,7 +123,7 @@ def chat(session_id: str, question: str, user_id: str):
         )
 
     # --------------------------------------------------------
-    # 5. Build contexts
+    # 7. Build contexts
     # --------------------------------------------------------
 
     contexts = []
@@ -86,7 +139,7 @@ def chat(session_id: str, question: str, user_id: str):
         })
 
     # --------------------------------------------------------
-    # 6. Build prompt
+    # 8. Build prompt
     # --------------------------------------------------------
 
     context_text = ""
@@ -106,32 +159,34 @@ def chat(session_id: str, question: str, user_id: str):
         )
 
     prompt = f"""
-Answer only using the context below.
+    Answer only using the context below.
 
-Give citations in the format:
-(File: filename, Page: number)
+    Give citations in the format:
+    (File: filename, Page: number)
 
-If the answer cannot be found in the context,
-say that the information is not available
-in the provided documents.
+    If the answer cannot be found in the context,
+    say that the information is not available
+    in the provided documents.
 
-Context:
-{context_text}
+    Context:
+    {context_text}
 
-Question:
-{question}
+    Question:
+    {question}
 
-Answer:
-"""
-
-    # --------------------------------------------------------
-    # 7. Generate answer
-    # --------------------------------------------------------
-
-    result = generator.print_response(prompt)
+    Answer:
+    """
 
     # --------------------------------------------------------
-    # 8. Save user message
+    # 9. Generate answer
+    # --------------------------------------------------------
+
+    result = generator.print_response(
+        prompt
+    )
+
+    # --------------------------------------------------------
+    # 10. Save user message
     # --------------------------------------------------------
 
     (
@@ -146,7 +201,7 @@ Answer:
     )
 
     # --------------------------------------------------------
-    # 9. Save assistant message
+    # 11. Save assistant message
     # --------------------------------------------------------
 
     (
@@ -161,17 +216,19 @@ Answer:
     )
 
     # --------------------------------------------------------
-    # 10. Return answer
+    # 12. Return answer and title
     # --------------------------------------------------------
 
     return {
         "question": question,
         "answer": result,
+        "title": title,
     }
 
 # ============================================================
 # Get Chat History
 # ============================================================
+
 
 def get_chat_history(session_id: str, user_id: str):
 
@@ -201,18 +258,6 @@ def get_chat_history(session_id: str, user_id: str):
 # Get Users all previous Sessions
 # ============================================================
 
-
-# def get_user_sessions(user_id: str):
-#     response = (
-#         supabase
-#         .table("sessions")
-#         .select("id, created_at")
-#         .eq("user_id", user_id)
-#         .order("created_at", desc=True)
-#         .execute()
-#     )
-
-#     return response.data
 def get_user_sessions(user_id: str):
 
     # --------------------------------------------------------
@@ -222,7 +267,7 @@ def get_user_sessions(user_id: str):
     sessions_response = (
         supabase
         .table("sessions")
-        .select("id, created_at")
+        .select("id, title, created_at")
         .eq("user_id", user_id)
         .order("created_at", desc=True)
         .execute()
@@ -303,6 +348,7 @@ def get_user_sessions(user_id: str):
 
         result.append({
             "id": session_id,
+            "title": session["title"],
             "created_at": session["created_at"],
             "status": status,
         })

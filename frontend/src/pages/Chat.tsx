@@ -177,6 +177,7 @@ export default function Chat() {
 
       const newSession: Session = {
         id: data.session_id,
+        title: null,
         created_at: new Date().toISOString(),
         status: "no_documents",
       };
@@ -345,6 +346,20 @@ export default function Chat() {
         sessionId,
         trimmed
       );
+
+      // Update sidebar title on first question
+      if (data.title) {
+        setSessions((current) =>
+          current.map((session) =>
+            session.id === sessionId
+              ? {
+                  ...session,
+                  title: data.title,
+                }
+              : session
+          )
+        );
+      }
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),

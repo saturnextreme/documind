@@ -63,8 +63,11 @@ export default function SessionList({
                 />
               </svg>
 
-              <span className="truncate">
-                Conversation
+              <span
+                className="truncate"
+                title={session.title || "New conversation"}
+              >
+                {session.title || "New conversation"}
               </span>
             </button>
 
