@@ -43,6 +43,7 @@ export default function ChatSetup({
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <FileUpload
+            key={sessionId}
             sessionId={sessionId}
             onUploadSuccess={onUploadSuccess}
           />

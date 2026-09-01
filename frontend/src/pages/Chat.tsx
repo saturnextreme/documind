@@ -57,12 +57,12 @@ export default function Chat() {
   // ==========================================================
 
   useEffect(() => {
-    if (!sessionId || sessions.length === 0) {
+    if (!sessionId) {
       return;
     }
 
     loadSelectedSession(sessionId);
-  }, [sessionId, sessions]);
+  }, [sessionId]);
 
   // ==========================================================
   // Auto-scroll chat
@@ -97,6 +97,11 @@ export default function Chat() {
   // ==========================================================
 
   const loadSelectedSession = async (id: string) => {
+    setMessages([]);
+    setQuestion("");
+    setUploaded(false);
+    setIndexed(false);
+    setError("");
     const selectedSession = sessions.find(
       (session) => session.id === id
     );
@@ -186,6 +191,13 @@ export default function Chat() {
         newSession,
         ...current,
       ]);
+
+      // Immediately reset the current chat UI
+      setMessages([]);
+      setQuestion("");
+      setUploaded(false);
+      setIndexed(false);
+      setError("");
 
       navigate(`/chat/${data.session_id}`);
     } catch (error) {
