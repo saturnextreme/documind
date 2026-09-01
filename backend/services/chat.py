@@ -98,8 +98,8 @@ def chat(session_id: str, question: str, user_id: str):
     # --------------------------------------------------------
 
     query_embedding = embedder.embed(
-        question
-    )
+        [question]
+    )[0]
 
     # --------------------------------------------------------
     # 6. Search similar document chunks

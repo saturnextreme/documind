@@ -1,6 +1,5 @@
 from rag.document_loader import DocumentLoader, TextSplitter
 from rag.embedder import Embedder
-from rag.generate_response import GenerateResponse
 
 
 class RAGPipeline:
