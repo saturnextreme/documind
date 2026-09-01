@@ -60,12 +60,12 @@ export default function Chat() {
   // ==========================================================
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!sessionId || sessions.length === 0) {
       return;
     }
 
     loadSelectedSession(sessionId);
-  }, [sessionId]);
+  }, [sessionId, sessions]);
 
   // ==========================================================
   // Auto-scroll chat

@@ -4,7 +4,9 @@ export default function DashboardWelcome() {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6">
       <div className="w-full max-w-2xl text-center">
-        <AppLogo size="lg" />
+        <div className="flex justify-center">
+          <AppLogo size="lg" />
+        </div>
 
         <h1 className="mt-6 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Start a conversation with your documents

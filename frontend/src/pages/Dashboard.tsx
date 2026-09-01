@@ -17,6 +17,7 @@ export default function Dashboard() {
   const { sessionId } = useParams();
 
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
   const [creatingSession, setCreatingSession] = useState(false);
   const [deletingSession, setDeletingSession] = useState(false);
   const [error, setError] = useState("");
@@ -42,6 +43,8 @@ export default function Dashboard() {
           ? error.message
           : "Failed to load conversations"
       );
+    } finally {
+      setSessionsLoading(false);
     }
   };
 
@@ -55,6 +58,7 @@ export default function Dashboard() {
       setSessions((current) => [
         {
           id: data.session_id,
+          title: null,
           created_at: new Date().toISOString(),
           status: "no_documents",
         },
@@ -111,6 +115,7 @@ export default function Dashboard() {
       <Sidebar
         sessions={sessions}
         activeSessionId={sessionId}
+        sessionsLoading={sessionsLoading}
         creatingSession={creatingSession}
         deletingSession={deletingSession}
         onNewChat={handleNewChat}

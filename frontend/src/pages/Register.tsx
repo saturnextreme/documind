@@ -46,35 +46,37 @@ export default function Register() {
       <div className="relative z-10 w-full max-w-md">
         {/* Brand */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 shadow-lg shadow-violet-200/50">
-            <svg
-              className="h-6 w-6 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20V3.5Z"
-              />
+          <Link to="/" className="inline-flex">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 shadow-lg shadow-violet-200/50 transition hover:scale-105">
+              <svg
+                className="h-6 w-6 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20V3.5Z"
+                />
 
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 3.5V8h4"
-              />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14 3.5V8h4"
+                />
 
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 12h4M10 15h4"
-              />
-            </svg>
-          </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10 12h4M10 15h4"
+                />
+              </svg>
+            </div>
+          </Link>
 
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="mt-5 text-3xl font-bold tracking-tight">
             Create your account
           </h1>
 
@@ -134,6 +136,7 @@ export default function Register() {
                     strokeLinejoin="round"
                     d="M9 12l2 2 4-4"
                   />
+
                   <circle cx="12" cy="12" r="9" />
                 </svg>
 
@@ -165,9 +168,15 @@ export default function Register() {
           </div>
         </AuthCard>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Secure authentication powered by Supabase.
-        </p>
+        {/* Back to landing */}
+        <div className="mt-6 text-center">
+          <Link
+            to="/"
+            className="text-xs text-slate-400 transition hover:text-slate-600"
+          >
+            ← Back to DocuMind
+          </Link>
+        </div>
       </div>
     </div>
   );
