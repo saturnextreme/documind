@@ -168,3 +168,143 @@ Answer:
         "question": question,
         "answer": result,
     }
+
+# ============================================================
+# Get Chat History
+# ============================================================
+
+def get_chat_history(session_id: str, user_id: str):
+
+    # --------------------------------------------------------
+    # 1. Check session ownership
+    # --------------------------------------------------------
+
+    check_session(session_id, user_id)
+
+    # --------------------------------------------------------
+    # 2. Get messages
+    # --------------------------------------------------------
+
+    response = (
+        supabase
+        .table("chat_messages")
+        .select("id, role, content, created_at")
+        .eq("session_id", session_id)
+        .order("created_at")
+        .execute()
+    )
+
+    return response.data
+
+
+# ============================================================
+# Get Users all previous Sessions
+# ============================================================
+
+
+# def get_user_sessions(user_id: str):
+#     response = (
+#         supabase
+#         .table("sessions")
+#         .select("id, created_at")
+#         .eq("user_id", user_id)
+#         .order("created_at", desc=True)
+#         .execute()
+#     )
+
+#     return response.data
+def get_user_sessions(user_id: str):
+
+    # --------------------------------------------------------
+    # Get user's sessions
+    # --------------------------------------------------------
+
+    sessions_response = (
+        supabase
+        .table("sessions")
+        .select("id, created_at")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    sessions = sessions_response.data
+
+    if not sessions:
+        return []
+
+    # --------------------------------------------------------
+    # Get documents belonging to these sessions
+    # --------------------------------------------------------
+
+    session_ids = [session["id"] for session in sessions]
+
+    documents_response = (
+        supabase
+        .table("documents")
+        .select("session_id, status")
+        .in_("session_id", session_ids)
+        .execute()
+    )
+
+    documents = documents_response.data
+
+    # --------------------------------------------------------
+    # Group document statuses by session
+    # --------------------------------------------------------
+
+    status_by_session = {}
+
+    for document in documents:
+
+        session_id = document["session_id"]
+        status = document["status"]
+
+        status_by_session.setdefault(
+            session_id,
+            []
+        ).append(status)
+
+    # --------------------------------------------------------
+    # Build final session response
+    # --------------------------------------------------------
+
+    result = []
+
+    for session in sessions:
+
+        session_id = session["id"]
+
+        statuses = status_by_session.get(
+            session_id,
+            []
+        )
+
+        if not statuses:
+            status = "no_documents"
+
+        elif "failed" in statuses:
+            status = "failed"
+
+        elif "indexing" in statuses:
+            status = "indexing"
+
+        elif "uploaded" in statuses:
+            status = "uploaded"
+
+        elif all(
+            document_status == "indexed"
+            for document_status in statuses
+        ):
+            status = "indexed"
+
+        else:
+            status = "uploaded"
+
+        result.append({
+            "id": session_id,
+            "created_at": session["created_at"],
+            "status": status,
+        })
+
+    return result
