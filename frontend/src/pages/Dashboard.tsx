@@ -9,6 +9,7 @@ import {
 
 import Sidebar from "../components/Sidebar";
 import DashboardWelcome from "../components/DashboardWelcome";
+import Toast from "../components/Toast";
 
 import type { Session } from "../types/session";
 
@@ -132,7 +133,10 @@ export default function Dashboard() {
 
         {error && (
           <div className="border-b border-red-100 bg-red-50 px-5 py-3 text-sm text-red-600">
-            {error}
+            <Toast
+              message={error}
+              onClose={() => setError("")}
+            />
           </div>
         )}
 

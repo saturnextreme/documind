@@ -14,6 +14,7 @@ import Sidebar from "../components/Sidebar";
 import ChatSetup from "../components/ChatSetup";
 import ChatMessages from "../components/ChatMessages";
 import ChatInput from "../components/ChatInput";
+import Toast from "../components/Toast";
 
 import type { Session } from "../types/session";
 
@@ -59,13 +60,13 @@ export default function Chat() {
   // Load selected session whenever URL changes
   // ==========================================================
 
-  useEffect(() => {
-    if (!sessionId || sessions.length === 0) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!sessionId || sessions.length === 0) {
+  //     return;
+  //   }
 
-    loadSelectedSession(sessionId);
-  }, [sessionId, sessions]);
+  //   loadSelectedSession(sessionId);
+  // }, [sessionId, sessions]);
 
   // ==========================================================
   // Auto-scroll chat
@@ -101,82 +102,126 @@ export default function Chat() {
   // Load selected session
   // ==========================================================
 
-  const loadSelectedSession = async (id: string) => {
+// ==========================================================
+// Load selected session whenever URL/session changes
+// ==========================================================
+
+useEffect(() => {
+  if (!sessionId) {
+    return;
+  }
+
+  let cancelled = false;
+
+  const loadSession = async () => {
     setSessionLoading(true);
 
-    try {
-      setMessages([]);
-      setQuestion("");
-      setUploaded(false);
-      setIndexed(false);
-      setError("");
+    // Immediately reset UI for the new session
+    setMessages([]);
+    setQuestion("");
+    setUploaded(false);
+    setIndexed(false);
+    setError("");
 
+    try {
       const selectedSession = sessions.find(
-        (session) => session.id === id
+        (session) => session.id === sessionId
       );
 
+      // The session list may not have loaded yet.
       if (!selectedSession) {
         return;
       }
 
-      if (selectedSession.status === "no_documents") {
-        setUploaded(false);
-        setIndexed(false);
+      // If the user switched sessions while this request
+      // was running, don't allow this request to modify UI.
+      if (cancelled) {
         return;
       }
 
-      if (selectedSession.status === "uploaded") {
-        setUploaded(true);
-        setIndexed(false);
-        return;
-      }
+      switch (selectedSession.status) {
+        case "no_documents":
+          setUploaded(false);
+          setIndexed(false);
+          break;
 
-      if (selectedSession.status === "indexing") {
-        setUploaded(true);
-        setIndexed(false);
-        setError("Documents are still being prepared.");
-        return;
-      }
+        case "uploaded":
+          setUploaded(true);
+          setIndexed(false);
+          break;
 
-      if (selectedSession.status === "failed") {
-        setUploaded(true);
-        setIndexed(false);
-        setError(
-          "Document preparation failed. Please try indexing again."
-        );
-        return;
-      }
+        case "indexing":
+          setUploaded(true);
+          setIndexed(false);
+          setError("Documents are still being prepared.");
+          break;
 
-      if (selectedSession.status === "indexed") {
-        const data = await getChatHistory(id);
+        case "failed":
+          setUploaded(true);
+          setIndexed(false);
+          setError(
+            "Document preparation failed. Please try indexing again."
+          );
+          break;
 
-        setMessages(
-          data.map((message: Message) => ({
-            id: message.id,
-            role: message.role,
-            content: message.content,
-            created_at: message.created_at,
-          }))
-        );
+        case "indexed": {
+          const data = await getChatHistory(sessionId);
 
-        setUploaded(true);
-        setIndexed(true);
+          // VERY IMPORTANT:
+          // The user may have switched to another session
+          // while getChatHistory() was running.
+          if (cancelled) {
+            return;
+          }
+
+          setMessages(
+            data.map((message: Message) => ({
+              id: message.id,
+              role: message.role,
+              content: message.content,
+              created_at: message.created_at,
+            }))
+          );
+
+          setUploaded(true);
+          setIndexed(true);
+          break;
+        }
+
+        default:
+          setUploaded(false);
+          setIndexed(false);
       }
     } catch (error) {
+      if (cancelled) {
+        return;
+      }
+
       setError(
         error instanceof Error
           ? error.message
           : "Failed to load conversation"
       );
     } finally {
-      setSessionLoading(false);
+      if (!cancelled) {
+        setSessionLoading(false);
+      }
     }
   };
+
+  loadSession();
+
+  // Invalidate this request when sessionId changes
+  // or component unmounts.
+  return () => {
+    cancelled = true;
+  };
+}, [sessionId, sessions]);
+ 
 
   // ==========================================================
   // New chat
   // ==========================================================
-
   const handleNewChat = async () => {
     try {
       setCreating(true);
@@ -195,13 +240,6 @@ export default function Chat() {
         newSession,
         ...current,
       ]);
-
-      // Immediately reset the current chat UI
-      setMessages([]);
-      setQuestion("");
-      setUploaded(false);
-      setIndexed(false);
-      setError("");
 
       navigate(`/chat/${data.session_id}`);
     } catch (error) {
@@ -493,7 +531,10 @@ export default function Chat() {
 
             {error && (
               <div className="px-5 pb-3 text-center text-xs text-red-500">
-                {error}
+                <Toast
+                  message={error}
+                  onClose={() => setError("")}
+                />
               </div>
             )}
           </div>

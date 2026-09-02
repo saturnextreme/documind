@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import AuthCard from "../components/AuthCard";
+import Toast from "../components/Toast";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -117,7 +118,10 @@ export default function Register() {
             {/* Error */}
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {error}
+                <Toast
+                  message={error}
+                  onClose={() => setError("")}
+                />
               </div>
             )}
 
