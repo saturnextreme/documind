@@ -1,4 +1,3 @@
-````markdown
 # DocuMind AI
 
 > A production-ready multi-document RAG platform for intelligent PDF search, question answering, and source-grounded responses.
@@ -676,4 +675,3 @@ This project is available for educational and portfolio purposes.
 One important thing: I deliberately **didn't put unsupported claims** like “handles millions of documents,” “production-scale distributed architecture,” or “sub-second retrieval.” Your README should be something you can confidently defend in an interview.
 
 Also, because this is going on GitHub, I would **not include your real API keys or `.env` contents**—only the variable names as shown above.
-```
