@@ -16,6 +16,26 @@ The application also includes authentication, persistent chat history, session m
 
 ---
 
+## Screenshots
+
+### 1. Dashboard
+
+![DocuMind Dashboard](photos/swappy-20260902-122118.png)
+
+### 2. Document Upload & Management
+
+![Document Upload and Management](photos/swappy-20260902-122155.png)
+
+### 3. Document Q&A
+
+![Document Question and Answer](photos/swappy-20260902-122158.png)
+
+### 4. Source-Grounded Response
+
+![Source-Grounded Response](photos/swappy-20260902-122215.png)
+
+---
+
 ## Features
 
 - Multi-document PDF upload
